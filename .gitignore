@@ -1,0 +1,6 @@
+target/
+.mvn/
+out/
+.idea_modules/
+.idea/
+.kotlintest/
