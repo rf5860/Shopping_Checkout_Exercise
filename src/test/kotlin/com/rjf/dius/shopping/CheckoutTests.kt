@@ -4,7 +4,10 @@ import com.rjf.dius.shopping.model.Discount
 import com.rjf.dius.shopping.model.Item
 import com.rjf.dius.shopping.model.Item.*
 import com.rjf.dius.shopping.model.PricingRule
+import io.kotlintest.data.forall
+import io.kotlintest.specs.StringSpec
 import io.kotlintest.specs.WordSpec
+import io.kotlintest.tables.row
 import java.math.BigDecimal
 import java.math.RoundingMode.HALF_UP
 import io.kotlintest.shouldBe as shouldEqual
@@ -40,4 +43,49 @@ class TotalTests : WordSpec() {
             }
         }
     }
+}
+
+class CountTests : StringSpec() {
+    init {
+        "checkout.itemCount" {
+            forall(
+                row(arrayOf(), 0, 0, 0, 0),
+                row(arrayOf(`Super iPad`), 1, 0, 0, 0),
+                row(arrayOf(`Macbook Pro`), 0, 1, 0, 0),
+                row(arrayOf(`Apple TV`), 0, 0, 1, 0),
+                row(arrayOf(`VGA Adapter`), 0, 0, 0, 1),
+                row(Array(2) { `Super iPad` } + Array(3) { `Macbook Pro` } + Array(4) { `Apple TV` } + Array(5) { `VGA Adapter` }, 2, 3, 4, 5)
+            ) { items, expectedIpads, expectedMacbooks, expectedTvs, expectedAdapters ->
+                standardCheckoutWith(*items).apply {
+                    itemCount(`Super iPad`) shouldEqual expectedIpads
+                    itemCount(`Macbook Pro`) shouldEqual expectedMacbooks
+                    itemCount(`Apple TV`) shouldEqual expectedTvs
+                    itemCount(`VGA Adapter`) shouldEqual expectedAdapters
+                }
+            }
+        }
+    }
+}
+
+class ItemCountsTests : StringSpec() {
+    init {
+        "checkout.itemCounts" {
+            forall(
+                row(arrayOf(), 0, 0, 0, 0),
+                row(arrayOf(`Super iPad`), 1, 0, 0, 0),
+                row(arrayOf(`Macbook Pro`), 0, 1, 0, 0),
+                row(arrayOf(`Apple TV`), 0, 0, 1, 0),
+                row(arrayOf(`VGA Adapter`), 0, 0, 0, 1),
+                row(Array(2) { `Super iPad` } + Array(3) { `Macbook Pro` } + Array(4) { `Apple TV` } + Array(5) { `VGA Adapter` }, 2, 3, 4, 5)
+            ) { items, expectedIpads, expectedMacbooks, expectedTvs, expectedAdapters ->
+                standardCheckoutWith(*items).itemCounts() shouldContainExactly mapOf(
+                    `Super iPad` to expectedIpads,
+                    `Macbook Pro` to expectedMacbooks,
+                    `Apple TV` to expectedTvs,
+                    `VGA Adapter` to expectedAdapters
+                ).filterValues { it > 0 }
+            }
+        }
+    }
+}
 }

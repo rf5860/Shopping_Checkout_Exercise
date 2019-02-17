@@ -21,6 +21,20 @@ class Checkout(private val pricingRules: MutableList<PricingRule>) {
     private val bundleDeals = pricingRules.filterIsInstance(BundleDeal::class.java)
     private val bulkDiscounts = pricingRules.filterIsInstance(BulkDiscount::class.java)
     private val payForXDeals = pricingRules.filterIsInstance(PayForXReceiveY::class.java)
+
+    /**
+     * The number of occurrences of each item.
+     * @return the number of occurrences of each item.
+     */
+    fun itemCounts() = items.groupingBy { it }.eachCount()
+
+    /**
+     * The number of occurrences of the given item.
+     * @param item the item to count.
+     * @return the number of occurrences of the given item.
+     */
+    fun itemCount(item: Item) = itemCounts()[item] ?: 0
+
     /**
      * Adds [newItems] to the list of [items] for checkout.
      */
