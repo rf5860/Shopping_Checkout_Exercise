@@ -23,6 +23,24 @@ class Checkout(private val pricingRules: MutableList<PricingRule>) {
     private val payForXDeals = pricingRules.filterIsInstance(PayForXReceiveY::class.java)
 
     /**
+     * Get a list of the items which are free because of "Buy <X> for the price of <Y>" type discounts.
+     * @return a list of items which are free because of "Buy <X> for the price of <Y>" type discounts.
+     */
+    fun includedItems() = payForXDeals.flatMap { (item, payFor, receive) -> List(itemCount(item) / payFor * receive) { item } }
+
+    /**
+     * Get a list of the items which are free because they're bundled with some other item.
+     * @return a list of the items which are free because they're bundled with some other item.
+     */
+    fun bundledItems() = bundleDeals.flatMap { (purchased, min, bundled) -> List(itemCount(purchased) / min) { bundled } }
+
+    /**
+     * Get a list of the items which are included for free (because of pricing rules).
+     * @return a list of the items which are included for free (because of pricing rules).
+     */
+    fun freeItems() = includedItems() + bundledItems()
+
+    /**
      * The number of occurrences of each item.
      * @return the number of occurrences of each item.
      */

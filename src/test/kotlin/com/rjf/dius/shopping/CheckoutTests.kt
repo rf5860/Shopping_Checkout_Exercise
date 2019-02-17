@@ -5,6 +5,9 @@ import com.rjf.dius.shopping.model.Item
 import com.rjf.dius.shopping.model.Item.*
 import com.rjf.dius.shopping.model.PricingRule
 import io.kotlintest.data.forall
+import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotlintest.matchers.maps.shouldContainAll
+import io.kotlintest.matchers.maps.shouldContainExactly
 import io.kotlintest.specs.StringSpec
 import io.kotlintest.specs.WordSpec
 import io.kotlintest.tables.row
@@ -88,4 +91,50 @@ class ItemCountsTests : StringSpec() {
         }
     }
 }
+
+class BundledItemsTests : StringSpec() {
+    init {
+        "checkout.bundledItems" {
+            forall(
+                row(Array(1) { `VGA Adapter` }, emptyList()),
+                row(Array(1) { `Macbook Pro` } + `VGA Adapter`, List(1) { `VGA Adapter` }),
+                row(Array(2) { `Macbook Pro` } + `VGA Adapter`, List(2) { `VGA Adapter` }),
+                row(Array(2) { `Macbook Pro` } + Array(2) { `VGA Adapter` }, List(2) { `VGA Adapter` })
+            ) { items, expectedBundledItems ->
+                standardCheckoutWith(*items).bundledItems() shouldEqual expectedBundledItems
+            }
+        }
+    }
+}
+
+class IncludedItemsTests : StringSpec() {
+    init {
+        "checkout.includedItems" {
+            forall(
+                row(Array(1) { `Apple TV` }, emptyList()),
+                row(Array(2) { `Apple TV` }, emptyList()),
+                row(Array(3) { `Apple TV` }, List(1) { `Apple TV` }),
+                row(Array(4) { `Apple TV` }, List(1) { `Apple TV` }),
+                row(Array(5) { `Apple TV` }, List(1) { `Apple TV` }),
+                row(Array(6) { `Apple TV` }, List(2) { `Apple TV` })
+            ) { items, expectedIncludedItems ->
+                standardCheckoutWith(*items).includedItems() shouldEqual expectedIncludedItems
+            }
+        }
+    }
+}
+
+class FreeItemsTests : StringSpec() {
+    init {
+        "checkout.freeItems" {
+            forall(
+                row(Array(2) { `Macbook Pro` } + Array(2) { `Apple TV` }, List(2) { `VGA Adapter` }),
+                row(Array(6) { `Apple TV` }, List(2) { `Apple TV` }),
+                row(Array(3) { `Macbook Pro` } + Array(2) { `VGA Adapter` }, List(3) { `VGA Adapter` }),
+                row(Array(3) { `Macbook Pro` } + Array(2) { `VGA Adapter` } + Array(6) { `Apple TV` }, List(3) { `VGA Adapter` } + List(2) { `Apple TV` })
+            ) { items, expectedFreeItems ->
+                standardCheckoutWith(*items).freeItems() shouldContainExactlyInAnyOrder expectedFreeItems
+            }
+        }
+    }
 }
