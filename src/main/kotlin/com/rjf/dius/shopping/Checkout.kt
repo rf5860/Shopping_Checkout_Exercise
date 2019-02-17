@@ -18,6 +18,9 @@ import java.math.RoundingMode.DOWN
 class Checkout(private val pricingRules: MutableList<PricingRule>) {
     var items: MutableList<Item> = mutableListOf()
 
+    private val bundleDeals = pricingRules.filterIsInstance(BundleDeal::class.java)
+    private val bulkDiscounts = pricingRules.filterIsInstance(BulkDiscount::class.java)
+    private val payForXDeals = pricingRules.filterIsInstance(PayForXReceiveY::class.java)
     /**
      * Adds [newItems] to the list of [items] for checkout.
      */
