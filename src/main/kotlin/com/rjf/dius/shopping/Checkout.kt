@@ -75,5 +75,10 @@ class Checkout(private val pricingRules: MutableList<PricingRule>) {
      * Calculates the total amount payable.
      * @return the total amount payable.
      */
-    fun total(): BigDecimal = items.fold(ZERO) { sum, item -> sum + item.price }.setScale(2, DOWN)
+
+    /**
+     * Calculates the total amount payable.
+     * @return the total amount payable.
+     */
+    fun total(): BigDecimal = paidItems().entries.fold(ZERO) { sum, (item, count) -> sum + pricePerUnit(item) * BigDecimal(count) }.setScale(2, DOWN)
 }
