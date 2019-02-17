@@ -54,6 +54,19 @@ class Checkout(private val pricingRules: MutableList<PricingRule>) {
     fun itemCount(item: Item) = itemCounts()[item] ?: 0
 
     /**
+     * Get the price for a given item, after applying any discounts.
+     * @param item the item to get the price of.
+     * @return the price of the given item.
+     */
+    fun pricePerUnit(item: Item) = bulkDiscounts.find { it.item == item && itemCount(item) >= it.min }?.pricePerUnit() ?: item.price
+
+    /**
+     * Get the items which must be paid for during checkout (I.e. non-free items).
+     * @return the items which must be paid for during checkout.
+     */
+    fun paidItems() = itemCounts().mapValues { (k, v) -> v - freeItems().count { it == k } }
+
+    /**
      * Adds [newItems] to the list of [items] for checkout.
      */
     fun scan(vararg newItems: Item) = items.addAll(newItems)

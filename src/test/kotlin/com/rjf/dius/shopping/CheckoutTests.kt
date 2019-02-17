@@ -70,6 +70,53 @@ class CountTests : StringSpec() {
     }
 }
 
+class PricePerUnitTests : WordSpec() {
+    init {
+        "checkout.pricePerUnit" should {
+            "apply bulk discounts" {
+                standardCheckoutWith(*Array(4) { `Super iPad` }).pricePerUnit(`Super iPad`) shouldBe `Super iPad`.price - BigDecimal(50)
+            }
+            "not apply bulk discounts if below minimum" {
+                standardCheckoutWith(*Array(3) { `Super iPad` }).pricePerUnit(`Super iPad`) shouldBe `Super iPad`.price
+            }
+        }
+    }
+}
+
+
+class PaidItemsTests : WordSpec() {
+    init {
+        "checkout.paidItems" should {
+            "respect 2for1 discount" {
+                standardCheckoutWith(`Apple TV`, `Apple TV`, `Apple TV`, `VGA Adapter`).paidItems() shouldContainAll mapOf(`Apple TV` to 2)
+            }
+            "respect bulk discounts and handle unused 2for1 discount" {
+                standardCheckoutWith(`Apple TV`, `Super iPad`, `Super iPad`, `Apple TV`, `Super iPad`, `Super iPad`, `Super iPad`)
+                    .paidItems() shouldContainExactly mapOf(
+                    `Apple TV` to 2,
+                    `Super iPad` to 5
+                )
+            }
+            "respect bundled item discount" {
+                standardCheckoutWith(`Macbook Pro`, `VGA Adapter`, `Super iPad`).paidItems() shouldContainAll mapOf(
+                    `VGA Adapter` to 0
+                )
+            }
+            "handle unused 2for1 discount" {
+                standardCheckoutWith(`Apple TV`, `Apple TV`, `VGA Adapter`).paidItems() shouldContainAll mapOf(
+                    `Apple TV` to 2
+                )
+            }
+            "handle unused bundled item discount" {
+                standardCheckoutWith(`Macbook Pro`, `Super iPad`).paidItems() shouldContainExactly mapOf(
+                    `Macbook Pro` to 1,
+                    `Super iPad` to 1
+                )
+            }
+        }
+    }
+}
+
 class ItemCountsTests : StringSpec() {
     init {
         "checkout.itemCounts" {
