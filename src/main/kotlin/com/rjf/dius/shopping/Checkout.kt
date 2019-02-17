@@ -22,4 +22,10 @@ class Checkout(private val pricingRules: MutableList<PricingRule>) {
      * Adds [newItems] to the list of [items] for checkout.
      */
     fun scan(vararg newItems: Item) = items.addAll(newItems)
+
+    /**
+     * Calculates the total amount payable.
+     * @return the total amount payable.
+     */
+    fun total(): BigDecimal = items.fold(ZERO) { sum, item -> sum + item.price }.setScale(2, DOWN)
 }
